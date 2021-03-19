@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
-
+import android.util.Log;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -53,6 +53,9 @@ public class ScreenLive implements Runnable {
                 mediaProjection = mediaProjectionManager.getMediaProjection
                         (resultCode, data);
             }
+
+            Log.d("TAG", "ScreenLive onActivityResult: onActivityResult");
+
             LiveTaskManager.getInstance().execute(this);
         }
     }
@@ -67,10 +70,15 @@ public class ScreenLive implements Runnable {
 
     @Override
     public void run() {
+        Log.d("TAG", "ScreenLive run: ");
+
         //1、连接服务器  斗鱼rtmp服务器
         if (!connect(url)) {
+            Log.d("TAG", "ScreenLive connect 失败: ");
             return;
         }
+        Log.d("TAG", "ScreenLive connect 成功: ");
+
         isLiving = true;
         VideoCodec videoCodec = new VideoCodec(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
