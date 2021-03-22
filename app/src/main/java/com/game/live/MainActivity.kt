@@ -2,10 +2,10 @@ package com.game.live
 
 import android.Manifest
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
@@ -19,17 +19,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
+
 class MainActivity : AppCompatActivity() {
     private var screenRecordService: ScreenRecordService? = null
-    private var mediaProjectionManager: MediaProjectionManager? = null
-    private var mediaProjection: MediaProjection? = null
-    private val RECORD_REQUEST_CODE = 101
+    private val RECORD_REQUEST_CODE = 100
 
-    private var mScreenLive: ScreenLive? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //权限检查
         checkMyPermission()
     }
 
@@ -53,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             )
         } else {
             connectService()
+            Toast.makeText(this@MainActivity, "开始录屏", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -67,9 +65,14 @@ class MainActivity : AppCompatActivity() {
             ) {
                 Toast.makeText(this@MainActivity, "请设置必须的应用权限，否则将会导致运行异常！", Toast.LENGTH_SHORT)
                     .show()
-            } else if (grantResults.size != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED
+            } else if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED
             ) {
-                connectService()
+                if (null == screenRecordService) {
+                    connectService()
+                } else {
+
+
+                }
             }
         }
 
@@ -80,24 +83,31 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RECORD_REQUEST_CODE && resultCode == RESULT_OK) {
             //设置mediaProjection
-            if (screenRecordService != null) {
-                Log.d("TAG", "onActivityResult: onActivityResult")
-                screenRecordService!!.onActivityResult(requestCode, resultCode, data)
 
+            Log.d("TAG", "onActivityResult: onActivityResult")
+            val service = Intent(this@MainActivity, ScreenRecordService::class.java)
+            service.putExtra("code", resultCode)
+            service.putExtra("data", data)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                this@MainActivity.startForegroundService(service)
+                Toast.makeText(this@MainActivity, "开始录屏", Toast.LENGTH_SHORT).show()
+                setToBackground()
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun startLive(view: View?) {
-        if (screenRecordService != null) {
-            screenRecordService!!.startRecord(this)
+        //权限检查
+        var mediaProjectionManager =
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-            Toast.makeText(this@MainActivity, "开始录屏", Toast.LENGTH_SHORT).show()
-            setToBackground()
-        } else if (screenRecordService != null) {
-            screenRecordService!!.stopRecord()
-        } else if (screenRecordService == null) {
-            connectService()
+        // 创建截屏请求intent
+        val captureIntent: Intent = mediaProjectionManager.createScreenCaptureIntent()
+        // 投屏管理器
+        // 投屏管理器
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            this.startActivityForResult(captureIntent, 100)
         }
     }
 
@@ -107,11 +117,6 @@ class MainActivity : AppCompatActivity() {
             val binder: ScreenRecordService.ScreenRecordBinder =
                 service as ScreenRecordService.ScreenRecordBinder
             screenRecordService = binder.getScreenRecordService()
-            mediaProjectionManager =
-                getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            //开启录屏请求intent
-            val captureIntent: Intent = mediaProjectionManager!!.createScreenCaptureIntent()
-            startActivityForResult(captureIntent, RECORD_REQUEST_CODE)
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -126,9 +131,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(home)
     }
 
-    fun stopLive(view: View?) {
-        mScreenLive!!.stoptLive()
-    }
 
     private fun connectService() {
         val intent = Intent(this, ScreenRecordService::class.java)
@@ -138,10 +140,13 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(serviceConnection)
+        screenRecordService!!.stopRecord()
+        //关闭服务
+        //关闭服务
+        val service = Intent(this, ScreenRecordService::class.java)
+        stopService(service)
     }
-
     companion object {
-        // Used to load the 'native-lib' library on application startup.
         init {
             System.loadLibrary("native-lib")
         }

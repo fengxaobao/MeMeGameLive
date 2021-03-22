@@ -6,7 +6,7 @@ Live *live = nullptr;
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_enjoy_gamelive_ScreenLive_connect(JNIEnv *env, jobject instance, jstring url_) {
+Java_com_game_live_ScreenLive_connect(JNIEnv *env, jobject instance, jstring url_) {
     const char *url = env->GetStringUTFChars(url_, 0);
     int ret;
     do {
@@ -37,7 +37,7 @@ Java_com_enjoy_gamelive_ScreenLive_connect(JNIEnv *env, jobject instance, jstrin
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_enjoy_gamelive_ScreenLive_disConnect(JNIEnv *env, jobject instance) {
+Java_com_game_live_ScreenLive_disConnect(JNIEnv *env, jobject instance) {
 
     if (live) {
         if (live->sps) {
@@ -95,7 +95,7 @@ int sendAudio(int8_t *buf, int len, int type, int tms) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_enjoy_gamelive_ScreenLive_sendData(JNIEnv *env, jobject instance, jbyteArray data_,
+Java_com_game_live_ScreenLive_sendData(JNIEnv *env, jobject instance, jbyteArray data_,
                                             jint len, jint type, jlong tms) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
 

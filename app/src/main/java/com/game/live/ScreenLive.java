@@ -1,10 +1,8 @@
 package com.game.live;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.media.projection.MediaProjection;
-import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -16,27 +14,17 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class ScreenLive implements Runnable {
 
-    static {
-        System.loadLibrary("native-lib");
-    }
-
     private String url;
-    private MediaProjectionManager mediaProjectionManager;
     private boolean isLiving;
     private LinkedBlockingQueue<RTMPPackage> queue = new LinkedBlockingQueue<>();
     private MediaProjection mediaProjection;
 
+    static {
+        System.loadLibrary("native-lib");
+    }
 
-    public void startLive(Activity activity, String url) {
+    public void startLive(String url) {
         this.url = url;
-        // 投屏管理器
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            this.mediaProjectionManager = (MediaProjectionManager) activity
-                    .getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-            // 创建截屏请求intent
-            Intent captureIntent = mediaProjectionManager.createScreenCaptureIntent();
-            activity.startActivityForResult(captureIntent, 100);
-        }
 
     }
 
@@ -45,17 +33,11 @@ public class ScreenLive implements Runnable {
         isLiving = false;
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int resultCode, Intent data, MediaProjection mediaProjection) {
+        this.mediaProjection = mediaProjection;
         // 用户授权
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-            // 获得截屏器
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mediaProjection = mediaProjectionManager.getMediaProjection
-                        (resultCode, data);
-            }
-
+        if (resultCode == Activity.RESULT_OK && null != data) {
             Log.d("TAG", "ScreenLive onActivityResult: onActivityResult");
-
             LiveTaskManager.getInstance().execute(this);
         }
     }
