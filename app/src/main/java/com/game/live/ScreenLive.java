@@ -66,8 +66,8 @@ public class ScreenLive implements Runnable {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             videoCodec.startLive(mediaProjection);
         }
-        AudioCodec audioCodec = new AudioCodec(this);
-        audioCodec.startLive();
+//        AudioCodec audioCodec = new AudioCodec(this);
+//        audioCodec.startLive();
         boolean isSend = true;
         while (isLiving && isSend) {
             RTMPPackage rtmpPackage = null;
@@ -87,7 +87,7 @@ public class ScreenLive implements Runnable {
         }
         isLiving = false;
         videoCodec.stopLive();
-        audioCodec.stopLive();
+//        audioCodec.stopLive();
         queue.clear();
         disConnect();
     }

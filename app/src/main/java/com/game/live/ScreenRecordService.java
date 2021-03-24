@@ -31,6 +31,9 @@ public class ScreenRecordService extends Service {
         serviceThread.start();
         this.mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         screenLive = new ScreenLive();
+//        screenLive.startLive("rtmp://push-bs.juliweilai.cn/live/999999-999999-1616378931629-5747addd9b2cf687ccd5f3423cabc65e?sign=d410da26246c301c96fcd9374df9dc90&t=60581853");
+        screenLive.startLive("rtmp://push-bs.juliweilai.cn/live/999999-999999-1616552461630-02e701d03fc4b49ae87671dd6bab942b?sign=1d1cd2de4f8c2c211956b13221feef61&t=605abe2d");
+
     }
 
     @Override
@@ -59,14 +62,6 @@ public class ScreenRecordService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);
-    }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void startRecord() {
-        // 创建截屏请求intent
-
-        screenLive.startLive("rtmp://push-bs.juliweilai.cn/live/999999-999999-1616378931629-5747addd9b2cf687ccd5f3423cabc65e?sign=d410da26246c301c96fcd9374df9dc90&t=60581853");
     }
 
     private void createNotificationChannel() {
